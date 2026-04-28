@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Constellations — a personal reflection journal where each entry becomes a star.
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: entries
+    description: Reflection entries
+  - name: insights
+    description: Stats, streaks and aggregates
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +27,264 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /entries:
+    get:
+      operationId: listEntries
+      tags: [entries]
+      summary: List reflection entries
+      parameters:
+        - in: query
+          name: mood
+          required: false
+          schema:
+            $ref: "#/components/schemas/Mood"
+        - in: query
+          name: tag
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: from
+          required: false
+          description: Inclusive start date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: to
+          required: false
+          description: Inclusive end date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: search
+          required: false
+          description: Free-text search over entry content
+          schema:
+            type: string
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: A page of entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntryList"
+    post:
+      operationId: createEntry
+      tags: [entries]
+      summary: Create a new reflection entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEntryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+
+  /entries/{id}:
+    get:
+      operationId: getEntry
+      tags: [entries]
+      summary: Get a single entry by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateEntry
+      tags: [entries]
+      summary: Update an entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEntryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteEntry
+      tags: [entries]
+      summary: Delete an entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sky:
+    get:
+      operationId: getSky
+      tags: [entries]
+      summary: All entries as stars in the night sky
+      description: Returns every entry with a deterministic (x, y) position in [0, 1] used to render the personal night sky.
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 500
+      responses:
+        "200":
+          description: Entries with star positions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [stars]
+                properties:
+                  stars:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Star"
+
+  /entries/calendar:
+    get:
+      operationId: getCalendar
+      tags: [entries]
+      summary: Entries grouped by day for a given month
+      parameters:
+        - in: query
+          name: year
+          required: true
+          schema:
+            type: integer
+            minimum: 1970
+            maximum: 9999
+        - in: query
+          name: month
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: Calendar of entries for that month
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [year, month, days]
+                properties:
+                  year:
+                    type: integer
+                  month:
+                    type: integer
+                  days:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CalendarDay"
+
+  /insights:
+    get:
+      operationId: getInsights
+      tags: [insights]
+      summary: Aggregate insights about your sky
+      responses:
+        "200":
+          description: Insight stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Insights"
+
+  /entries/recent:
+    get:
+      operationId: listRecentEntries
+      tags: [entries]
+      summary: A short list of the most recent entries
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        "200":
+          description: Recent entries
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [entries]
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Entry"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +295,211 @@ components:
       required:
         - status
 
+    Mood:
+      type: string
+      enum: [radiant, calm, neutral, cloudy, stormy]
+      description: |
+        Mood of the entry — drives the visual treatment of its star.
+        - radiant: bright, joyful
+        - calm:    serene, peaceful
+        - neutral: ordinary, steady
+        - cloudy:  uncertain, heavy
+        - stormy:  difficult, intense
+
+    Entry:
+      type: object
+      required: [id, content, mood, tags, entryDate, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+          description: Free-form reflection text
+        mood:
+          $ref: "#/components/schemas/Mood"
+        tags:
+          type: array
+          items:
+            type: string
+        entryDate:
+          type: string
+          format: date
+          description: The day this entry is associated with (YYYY-MM-DD)
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    EntryList:
+      type: object
+      required: [entries, total]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entry"
+        total:
+          type: integer
+          description: Total entries matching the filter (ignoring limit/offset)
+
+    CreateEntryInput:
+      type: object
+      required: [content, mood]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        mood:
+          $ref: "#/components/schemas/Mood"
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 32
+          default: []
+        entryDate:
+          type: string
+          format: date
+          description: Optional date (YYYY-MM-DD); defaults to today.
+
+    UpdateEntryInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        mood:
+          $ref: "#/components/schemas/Mood"
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 32
+        entryDate:
+          type: string
+          format: date
+
+    Star:
+      type: object
+      required: [id, mood, x, y, brightness, entryDate, createdAt, preview]
+      properties:
+        id:
+          type: string
+        mood:
+          $ref: "#/components/schemas/Mood"
+        x:
+          type: number
+          format: float
+          description: Horizontal position in [0, 1]
+        y:
+          type: number
+          format: float
+          description: Vertical position in [0, 1]
+        brightness:
+          type: number
+          format: float
+          description: Suggested brightness in [0.4, 1.0]
+        preview:
+          type: string
+          description: Short preview of the entry content (truncated)
+        entryDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+
+    CalendarDay:
+      type: object
+      required: [date, count, moods]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+        moods:
+          type: array
+          description: Distinct moods recorded that day
+          items:
+            $ref: "#/components/schemas/Mood"
+
+    MoodCount:
+      type: object
+      required: [mood, count]
+      properties:
+        mood:
+          $ref: "#/components/schemas/Mood"
+        count:
+          type: integer
+
+    TagCount:
+      type: object
+      required: [tag, count]
+      properties:
+        tag:
+          type: string
+        count:
+          type: integer
+
+    MonthCount:
+      type: object
+      required: [month, count]
+      properties:
+        month:
+          type: string
+          description: Month in YYYY-MM
+        count:
+          type: integer
+
+    Insights:
+      type: object
+      required:
+        - totalEntries
+        - currentStreak
+        - longestStreak
+        - daysJournaled
+        - moodCounts
+        - topTags
+        - perMonth
+        - dominantMood
+      properties:
+        totalEntries:
+          type: integer
+        currentStreak:
+          type: integer
+          description: Consecutive days ending today (or yesterday) with at least one entry
+        longestStreak:
+          type: integer
+        daysJournaled:
+          type: integer
+          description: Number of distinct days with at least one entry
+        moodCounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/MoodCount"
+        topTags:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagCount"
+        perMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthCount"
+        dominantMood:
+          oneOf:
+            - $ref: "#/components/schemas/Mood"
+            - type: "null"
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
