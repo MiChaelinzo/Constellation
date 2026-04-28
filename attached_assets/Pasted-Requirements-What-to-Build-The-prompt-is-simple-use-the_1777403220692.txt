@@ -1,0 +1,29 @@
+Requirements
+What to Build
+The prompt is simple: use the Hackathon-in-a-Plugin inside Claude Code to plan and build a new application of your choosing. There are no category restrictions. Build a productivity tool, a game, a personal finance tracker, a community platform — anything you care about. If you followed the spec-driven development process and shipped something real, we want to see it.
+
+Not sure what to build? Check out the Resources tab for inspiration and examples from our beta testers.
+
+What to Submit:
+Project description — A write-up explaining what you built, why you chose it, and what you learned along the way.
+Your docs/ folder (zipped) — The planning artifacts you created during the process: your scope document, PRD, technical spec, and build checklist. These are a required part of your submission. They show your thinking, not just your output. Your docs folder is private — only the Devpost team can view it, it will not appear on your public project page.
+A link to your code repository — Public repo with source code and instructions to run the project.
+Complete the full process — planning artifacts through working app — and earn a Devpost completion badge.
+
+This is the first in a series of learning hackathons. The goal isn't to compete. It's to build the habit.
+
+PROJECT CRITERIA
+There is no competitive judging for this hackathon. Submissions are reviewed for completion — did you go through the full process, and does your docs/ folder reflect it?
+
+A completed submission includes:
+
+Scope | Did you define what you were building and what was explicitly out of scope?
+Requirements | Did you write user stories and acceptance criteria before you built?
+Technical Spec | Did you make architecture decisions upfront — or just wing it?
+Working App | Did you ship something real, not just a half-finished prototype?
+We may feature standout projects on the platform, but no additional prizes are attached.
+
+WHAT YOU'LL NEED TO GET STARTED
+A Claude Pro or Max subscription — required to use Claude Code. If you're unsure whether you have one, check before you start. This was the #1 setup surprise in our beta.
+Git installed on your computer
+A terminal — Mac Terminal, Windows PowerShell, or any command line. Don't worry if you've never used one — the onboarding video walks you through it.
